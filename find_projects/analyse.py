@@ -1,0 +1,146 @@
+import os
+import json
+import click
+import ollama
+from dotenv import load_dotenv
+from pathlib import Path
+from tqdm import tqdm
+import tempfile
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Assuming your Ollama API key is stored in an environment variable called OLLAMA_API_KEY
+ollama_api_key = os.getenv("OLLAMA_API_KEY")
+
+# Initialize Ollama API client (using host and timeout if needed)
+ollama_client = ollama.Client(host='http://localhost:11434')
+
+# Path where JSON will be stored
+JSON_FILE_PATH = "projects_info.json"
+
+# Function to read README or similar files
+def read_project_info(directory):
+    possible_files = ["README.md", "readme.md", "README.txt", "readme.txt"]
+    for file_name in possible_files:
+        file_path = os.path.join(directory, file_name)
+        if os.path.isfile(file_path):
+            with open(file_path, "r") as file:
+                return file.read()
+    return None
+
+# Function to read .gitignore and parse ignored patterns
+def get_gitignore_patterns(directory):
+    gitignore_path = os.path.join(directory, ".gitignore")
+    if not os.path.isfile(gitignore_path):
+        return []
+    
+    with open(gitignore_path, "r") as file:
+        patterns = [line.strip() for line in file if line.strip() and not line.startswith("#")]
+    return patterns
+
+# Function to check if a file or directory should be ignored based on .gitignore patterns
+def should_ignore(path, patterns):
+    from fnmatch import fnmatch
+    return any(fnmatch(path, pattern) for pattern in patterns)
+
+# Function to generate a tree-like structure of the project
+def generate_project_tree(directory, patterns, prefix=""):
+    tree = []
+    with os.scandir(directory) as it:
+        for entry in it:
+            if should_ignore(entry.name, patterns):
+                continue
+            
+            tree.append(f"{prefix}{entry.name}")
+            if entry.is_dir():
+                subtree = generate_project_tree(entry.path, patterns, prefix=prefix + "|   ")
+                tree.extend(subtree)
+    return tree
+
+# Function to scan each project directory inside a parent directory
+def scan_project_directories(parent_directory):
+    project_directories = [entry.path for entry in os.scandir(parent_directory) if entry.is_dir()]
+    results = []
+
+    with tqdm(total=len(project_directories), desc="Scanning project directories") as pbar:
+        for project_dir in project_directories:
+            project_data = scan_directory(project_dir)
+            results.append(project_data)
+            update_json(project_data)
+            pbar.update(1)
+
+    return results
+
+# Function to scan project directory
+def scan_directory(directory):
+    try:
+        patterns = get_gitignore_patterns(directory)
+        project_tree = generate_project_tree(directory, patterns)
+        
+        # Write project tree to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as temp_file:
+            for line in project_tree:
+                temp_file.write(line + "\n")
+            temp_file_path = temp_file.name
+        
+        readme_content = read_project_info(directory)
+        
+        if not readme_content:
+            return {
+                "title": os.path.basename(directory),
+                "directory": directory,
+                "error": "README or similar file not found"
+            }
+        
+        # Ask Ollama to analyze the project
+        response = ollama_client.chat(
+            model='llama3.2:1b',
+            messages=[
+                {
+                    'role': 'user',
+                    'content': f"Analyze the following project description and provide a summary including project name, technology stack, and its purpose:\n{readme_content}\n\nAdditionally, here is the project's directory structure:\n{open(temp_file_path).read()}"
+                }
+            ]
+        )
+        
+        # Clean up the temporary file
+        os.remove(temp_file_path)
+        
+        return {
+            "title": os.path.basename(directory),
+            "directory": directory,
+            "summary": response.get('message', {}).get('content', 'No summary provided'),
+            "tech_stack": response.get('tech_stack', 'No tech stack identified'),
+            "purpose": response.get('purpose', 'No purpose identified')
+        }
+    except Exception as e:
+        return {
+            "title": os.path.basename(directory),
+            "directory": directory,
+            "error": f"An error occurred: {str(e)}"
+        }
+
+# Function to update the JSON file with new project information
+def update_json(project_data):
+    if os.path.exists(JSON_FILE_PATH):
+        with open(JSON_FILE_PATH, "r") as file:
+            projects = json.load(file)
+    else:
+        projects = []
+
+    projects.append(project_data)
+
+    with open(JSON_FILE_PATH, "w") as file:
+        json.dump(projects, file, indent=4)
+
+# Click CLI for searching and analyzing projects
+@click.command()
+@click.argument('parent_directory', type=click.Path(exists=True))
+def analyze_projects(parent_directory):
+    """Scans all project directories inside the specified parent directory and uses Ollama to determine project details."""
+    scan_project_directories(parent_directory)
+    click.echo("Project information updated in JSON.")
+
+if __name__ == "__main__":
+    analyze_projects()
