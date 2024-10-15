@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 from tqdm import tqdm
 import tempfile
+import asyncio
+import aiofiles
+import concurrent.futures
 
 # Load environment variables from .env file
 load_dotenv()
@@ -19,9 +22,9 @@ ollama_client = ollama.Client(host='http://localhost:11434')
 # Path where JSON will be stored
 JSON_FILE_PATH = "projects_info.json"
 
-# Function to read README or similar files
+# Function to read README or pyproject.toml files
 def read_project_info(directory):
-    possible_files = ["README.md", "readme.md", "README.txt", "readme.txt"]
+    possible_files = ["README.md", "readme.md", "README.txt", "readme.txt", "pyproject.toml"]
     for file_name in possible_files:
         file_path = os.path.join(directory, file_name)
         if os.path.isfile(file_path):
@@ -45,27 +48,33 @@ def should_ignore(path, patterns):
     return any(fnmatch(path, pattern) for pattern in patterns)
 
 # Function to generate a tree-like structure of the project
-def generate_project_tree(directory, patterns, prefix=""):
+async def generate_project_tree(directory, patterns, prefix=""):
     tree = []
-    with os.scandir(directory) as it:
-        for entry in it:
-            if should_ignore(entry.name, patterns):
-                continue
-            
-            tree.append(f"{prefix}{entry.name}")
-            if entry.is_dir():
-                subtree = generate_project_tree(entry.path, patterns, prefix=prefix + "|   ")
-                tree.extend(subtree)
+    async for entry in aiofiles.os.scandir(directory):
+        if should_ignore(entry.name, patterns):
+            continue
+        
+        tree.append(f"{prefix}{entry.name}")
+        if entry.is_dir():
+            subtree = await generate_project_tree(entry.path, patterns, prefix=prefix + "|   ")
+            tree.extend(subtree)
     return tree
 
 # Function to scan each project directory inside a parent directory
-def scan_project_directories(parent_directory):
+async def scan_project_directories(parent_directory, append=False):
     project_directories = [entry.path for entry in os.scandir(parent_directory) if entry.is_dir()]
     results = []
 
+    if not append:
+        # If not appending, start with an empty JSON file
+        if os.path.exists(JSON_FILE_PATH):
+            os.remove(JSON_FILE_PATH)
+
     with tqdm(total=len(project_directories), desc="Scanning project directories") as pbar:
-        for project_dir in project_directories:
-            project_data = scan_directory(project_dir)
+        loop = asyncio.get_event_loop()
+        futures = [loop.run_in_executor(None, scan_directory, project_dir) for project_dir in project_directories]
+        for future in asyncio.as_completed(futures):
+            project_data = await future
             results.append(project_data)
             update_json(project_data)
             pbar.update(1)
@@ -76,7 +85,7 @@ def scan_project_directories(parent_directory):
 def scan_directory(directory):
     try:
         patterns = get_gitignore_patterns(directory)
-        project_tree = generate_project_tree(directory, patterns)
+        project_tree = generate_project_tree_sync(directory, patterns)
         
         # Write project tree to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as temp_file:
@@ -121,6 +130,20 @@ def scan_directory(directory):
             "error": f"An error occurred: {str(e)}"
         }
 
+# Synchronous function for generating a project tree
+def generate_project_tree_sync(directory, patterns, prefix=""):
+    tree = []
+    with os.scandir(directory) as it:
+        for entry in it:
+            if should_ignore(entry.name, patterns):
+                continue
+            
+            tree.append(f"{prefix}{entry.name}")
+            if entry.is_dir():
+                subtree = generate_project_tree_sync(entry.path, patterns, prefix=prefix + "|   ")
+                tree.extend(subtree)
+    return tree
+
 # Function to update the JSON file with new project information
 def update_json(project_data):
     if os.path.exists(JSON_FILE_PATH):
@@ -137,9 +160,10 @@ def update_json(project_data):
 # Click CLI for searching and analyzing projects
 @click.command()
 @click.argument('parent_directory', type=click.Path(exists=True))
-def analyze_projects(parent_directory):
+@click.option('--append', is_flag=True, help="Append to the existing JSON file instead of replacing it.")
+def analyze_projects(parent_directory, append):
     """Scans all project directories inside the specified parent directory and uses Ollama to determine project details."""
-    scan_project_directories(parent_directory)
+    asyncio.run(scan_project_directories(parent_directory, append=append))
     click.echo("Project information updated in JSON.")
 
 if __name__ == "__main__":

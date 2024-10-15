@@ -1,21 +1,17 @@
 [
     {
-        "directory": "../",
-        "error": "README or similar file not found"
-    },
-    {
-        "title": "",
-        "directory": "../",
-        "error": "README or similar file not found"
-    },
-    {
-        "title": "",
-        "directory": "../",
-        "error": "README or similar file not found"
-    },
-    {
         "title": "jupyter_test",
         "directory": "../jupyter_test",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "fisheye2equi",
+        "directory": "../fisheye2equi",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "healthcrisis",
+        "directory": "../healthcrisis",
         "error": "README or similar file not found"
     },
     {
@@ -24,32 +20,65 @@
         "error": "README or similar file not found"
     },
     {
-        "title": "mpi_data_store-main",
-        "directory": "../mpi_data_store-main",
-        "summary": "This is a Git repository, specifically the root directory of a project. It contains various files and directories that are used to manage the codebase.\n\nHere's a breakdown of what each section represents:\n\n1. **Index**: The current state of the repository, which includes any changes made since the last commit.\n2. **branches**: A list of separate development branches, which are used for different stages of the project:\n\t* `main`: The main branch, which is the default branch.\n\t* `feature/new-feature`: A feature branch that contains a new, incomplete feature.\n\t* `fix/bug-fix`: A bug-fix branch that contains changes to resolve an existing issue.\n3. **packed-refs**: A list of Git references that are pre-packaged for easy transfer between machines.\n\nIn the context of your question, I assume you want to know what files or directories are located in this repository at a given point in time (i.e., `FETCH_HEAD`).\n\nIf you'd like me to extract specific information from this repository, please let me know which details you're interested in. Some possibilities include:\n\n* The names of the `.py` files in each branch\n* The contents of specific directories or subdirectories\n* The timestamps of commits that have been made to particular changes\n\nPlease provide more context or clarify what you'd like me to focus on, and I'll do my best to assist!",
-        "tech_stack": "No tech stack identified",
-        "purpose": "No purpose identified"
-    },
-    {
-        "title": "HelloDocker",
-        "directory": "../HelloDocker",
-        "summary": "Based on the provided project description, I can summarize the following:\n\n**Project Name:** HelloDocker\n**Technology Stack:** Docker (SDK)\n**Purpose:** The purpose of this project is to create a simple \"Hello World\" example in Python using Docker as the containerization platform. It aims to showcase how to use Docker for rapid development and deployment.\n\nHere's a summary of the technology stack:\n\n* **Docker**: A popular containerization platform that allows users to package, ship, and run applications as containers.\n* **SDK (Software Development Kit)**: Hugging Face provides a Docker SDK for creating and managing Docker images and containers.\n\nThe project structure consists of the following files:\n\n* `Dockerfile`: The Dockerfile is used to create a new image from scratch.\n* `code`: This directory contains the source code for the application, including `main.py` and other relevant files.\n* `README.md`: A documentation file that provides information about the project.\n* `.gitattributes`, `.git`, and other configuration files are also present in the repository.\n\nThe project is designed to be a simple \"Hello World\" example that demonstrates how to use Docker for containerization. It includes various configuration settings, such as:\n\n* `config`: A directory containing configuration files for Hugging Face.\n* `objects`: A subdirectory containing object files generated during the build process.\n* `index.html`, `requirements.txt`, and other relevant files are also present in this directory.\n\nThe project's main functionality is to create a Docker image from the provided code and run it as a container. The included configuration files and settings allow for customization and flexibility when using Docker with this application.",
-        "tech_stack": "No tech stack identified",
-        "purpose": "No purpose identified"
-    },
-    {
-        "title": "healthcrisis",
-        "directory": "../healthcrisis",
+        "title": "URPVuforia25d",
+        "directory": "../URPVuforia25d",
         "error": "README or similar file not found"
     },
     {
-        "title": "whisper-test",
-        "directory": "../whisper-test",
+        "title": "TestUnity2",
+        "directory": "../TestUnity2",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "BlockStackingExamples",
+        "directory": "../BlockStackingExamples",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "pixelize",
+        "directory": "../pixelize",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "stitching",
+        "directory": "../stitching",
         "error": "README or similar file not found"
     },
     {
         "title": "AR5_0Foundation",
         "directory": "../AR5_0Foundation",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "hello_gsheet",
+        "directory": "../hello_gsheet",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "XRStarter2022",
+        "directory": "../XRStarter2022",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "TesttunityDIY",
+        "directory": "../TesttunityDIY",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "HelloDocker",
+        "directory": "../HelloDocker",
+        "summary": "**Project Summary:**\n\nThe project is called \"HelloDocker\" and it's a simple example of how to create a Docker image using the Hugging Face SDK. The purpose of this project is likely to demonstrate how to build and push a Docker image to a registry, such as Docker Hub.\n\n**Technology Stack:**\n\n* Docker\n* Hugging Face SDK (specifically, the `docker-sdk` package)\n* `requirements.txt`: lists dependencies required for the project\n\n**Project Name:** HelloDocker\n\nThe project name \"HelloDocker\" suggests that it's an introductory or example project that showcases how to use Docker and the Hugging Face SDK. The use of emojis and a pink and red color scheme further emphasizes this theme.\n\nOverall, the HelloDocker project is designed to be a simple and easy-to-use example of how to work with Docker and the Hugging Face SDK.",
+        "tech_stack": "No tech stack identified",
+        "purpose": "No purpose identified"
+    },
+    {
+        "title": "gradio_tests",
+        "directory": "../gradio_tests",
+        "error": "README or similar file not found"
+    },
+    {
+        "title": "2DBoltTtest",
+        "directory": "../2DBoltTtest",
         "error": "README or similar file not found"
     }
 ]
