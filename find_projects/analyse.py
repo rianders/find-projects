@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 from tqdm import tqdm
 import tempfile
+import shutil
+
 import asyncio
 import aiofiles
 import concurrent.futures
@@ -24,13 +26,25 @@ JSON_FILE_PATH = "projects_info.json"
 
 # Function to read README or pyproject.toml files
 def read_project_info(directory):
+    """
+    Reads and concatenates all the file information in the given directory.
+
+    Args:
+        directory (str): The path to the directory that contains project files.
+
+    Returns:
+        str: A concatenated string containing all the file information.
+    """
     possible_files = ["README.md", "readme.md", "README.txt", "readme.txt", "pyproject.toml"]
+    concatenated_content = ""
     for file_name in possible_files:
         file_path = os.path.join(directory, file_name)
         if os.path.isfile(file_path):
             with open(file_path, "r") as file:
-                return file.read()
-    return None
+                content = file.read()
+                concatenated_content += content + "\n"
+    return concatenated_content
+  
 
 # Function to read .gitignore and parse ignored patterns
 def get_gitignore_patterns(directory):
